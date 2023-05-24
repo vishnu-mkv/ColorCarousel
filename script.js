@@ -5,33 +5,79 @@ const slider = document.querySelector("#slider");
 const colorPicker = document.querySelector("#color-picker");
 const prevBtn = document.querySelector("#prev");
 const nextBtn = document.querySelector("#next");
-const slides = document.querySelectorAll(".slide");
-
-function render() {}
+let slides = document.querySelectorAll(".slide");
 
 // Initialize the current slide index
 let currentSlide = 0;
 let currentActiveSlide = document.querySelector(".active-slide");
+let dummySlide = null;
 
-function setActiveSlide() {
+function setActiveSlide(index) {
+  let nextActive = index;
+  let updateDom = false;
+  if (index === 0 && currentSlide === totalSlides - 1) {
+    // clone the last slide
+    dummySlide = slides[index].cloneNode(true);
+    // add the dummy slide to the beginning of the slider
+    slider.append(dummySlide);
+    nextActive = totalSlides;
+    updateDom = true;
+
+    // update colors
+    colors.push(colors[0]);
+  }
+
+  if (index === totalSlides - 1 && currentSlide === 0) {
+    // clone the first slide
+    dummySlide = slides[index].cloneNode(true);
+    // add the dummy slide to the beginning of the slider
+    slider.prepend(dummySlide);
+    nextActive = 0;
+    updateDom = true;
+  }
+
+  if (updateDom) {
+    // update the slides NodeList
+    slider.children = slides;
+    slides = document.querySelectorAll(".slide");
+  }
+
+  handleChange(nextActive);
+
+  if (dummySlide) {
+    setTimeout(() => {
+      // remove the dummy slide
+      dummySlide.remove();
+      dummySlide = null;
+      slides = document.querySelectorAll(".slide");
+      // update the slides NodeList
+      slider.children = slides;
+      handleChange(index, false);
+
+      // update colors
+      if (colors.length > totalSlides) colors.pop();
+    }, 500);
+  }
+}
+
+function handleChange(nextActive, smooth = true) {
+  currentSlide = nextActive;
   // Remove the active-slide class from all slides
   currentActiveSlide.classList.remove("active-slide");
   // Add the active-slide class to the current slide
+
   currentActiveSlide = slides[currentSlide];
   currentActiveSlide.classList.add("active-slide");
 
   //   Update the color picker value
   colorPicker.value = colors[currentSlide];
+  currentActiveSlide.scrollIntoView({ behavior: smooth ? "smooth" : "auto" });
 }
 
 // Function to animate the carousel to the next slide
-function goToSlide(index) {
-  // Increment the current slide index
-  currentSlide = index;
-
+function goToSlide(index, type = "next") {
   // Update the slider style to animate the transition
-  setActiveSlide();
-  currentActiveSlide.scrollIntoView({ behavior: "smooth" });
+  setActiveSlide(index, type);
 }
 
 nextBtn.addEventListener("click", () =>
@@ -39,7 +85,7 @@ nextBtn.addEventListener("click", () =>
 );
 
 prevBtn.addEventListener("click", () =>
-  goToSlide((currentSlide + totalSlides - 1) % totalSlides)
+  goToSlide((currentSlide + totalSlides - 1) % totalSlides, "prev")
 );
 
 colorPicker.addEventListener("input", (e) => {
