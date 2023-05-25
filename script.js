@@ -13,6 +13,7 @@ const colorPicker = document.querySelector("#color-picker");
 const prevBtn = document.querySelector("#prev");
 const nextBtn = document.querySelector("#next");
 let slides = document.querySelectorAll(".slide");
+const resetBtn = document.querySelector("#reset");
 
 // Initialize the current slide index
 let currentSlide = 0;
@@ -20,17 +21,21 @@ let currentActiveSlide = document.querySelector(".active-slide");
 let dummySlide = null;
 
 // Set the initial color picker value
-colorPicker.value = colors[currentSlide];
 
-// Set the all slide background color
-slides.forEach((slide, index) => {
-  slide.style.backgroundColor = colors[index];
-  // set text color to black or white depending on background color
-  const textColor = getTextColorFromBackground(colors[index]);
-  slide.style.color = textColor;
-  //   update hex inside span
-  slide.querySelector("span").textContent = colors[index];
-});
+function updateAllSlides() {
+  colorPicker.value = colors[currentSlide];
+  // Set the all slide background color
+  slides.forEach((slide, index) => {
+    slide.style.backgroundColor = colors[index];
+    // set text color to black or white depending on background color
+    const textColor = getTextColorFromBackground(colors[index]);
+    slide.style.color = textColor;
+    //   update hex inside span
+    slide.querySelector("span").textContent = colors[index];
+  });
+}
+
+updateAllSlides();
 
 function setActiveSlide(index) {
   let nextActive = index;
@@ -122,4 +127,13 @@ colorPicker.addEventListener("input", (e) => {
 
   const textColor = getTextColorFromBackground(color);
   currentActiveSlide.style.color = textColor;
+});
+
+resetBtn.addEventListener("click", () => {
+  // reset all colors to white
+  colors.fill("#FFFFFF");
+  //   write to local storage
+  localStorage.setItem("colors", JSON.stringify(colors));
+
+  updateAllSlides();
 });
